@@ -342,10 +342,25 @@ static NSString * const CustomCellReuseIdentifier = @"CustomCell";
         [self upadateCollectionView:allPhotosFetchResults animated:(self.galleryData != nil)];
         return;
     }
+    PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum
+                                                                          subtype:PHAssetCollectionSubtypeAlbumRegular
+                                                                          options:nil];
+
     
-    PHFetchResult *collections = [PHCollectionList fetchTopLevelUserCollectionsWithOptions:nil];
+    PHFetchResult *topLevelUserCollections = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum
+                                                                                      subtype:PHAssetCollectionSubtypeAny
+                                                                                      options:nil];
+    NSMutableArray *localIDList = [[NSMutableArray alloc] init];
     
-    [collections enumerateObjectsUsingBlock:^(PHAssetCollection *collection, NSUInteger idx, BOOL * _Nonnull stop) {
+    [topLevelUserCollections enumerateObjectsUsingBlock:^(PHAssetCollection *collection, NSUInteger idx, BOOL *stop) {
+        [localIDList addObject:collection.localIdentifier];
+    }];
+    [smartAlbums enumerateObjectsUsingBlock:^(PHAssetCollection *collection, NSUInteger idx, BOOL *stop) {
+        [localIDList addObject:collection.localIdentifier];
+    }];
+    PHFetchResult *allAlbums = [PHAssetCollection fetchAssetCollectionsWithLocalIdentifiers:localIDList options:nil];
+    
+    [allAlbums enumerateObjectsUsingBlock:^(PHAssetCollection *collection, NSUInteger idx, BOOL * _Nonnull stop) {
         
         if ([collection.localizedTitle isEqualToString:albumName]) {
             
